@@ -1,6 +1,5 @@
-const CACHE_NAME = 'pwdhash-v1';
+const CACHE_NAME = 'pwdhash-v2';
 const ASSETS = [
-  './',
   './index.html',
   './manifest.json',
   './icon-192.png',
@@ -24,7 +23,12 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  var url = new URL(event.request.url);
+  // Map directory requests to index.html
+  if (url.pathname.endsWith('/')) {
+    url.pathname += 'index.html';
+  }
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    caches.match(url.pathname).then(cached => cached || fetch(event.request))
   );
 });
