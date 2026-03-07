@@ -252,6 +252,11 @@ document.getElementById('copyBtn').addEventListener('click', function() {
   });
 });
 
+// Set window size in standalone (installed) mode
+if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+  window.resizeTo(440, 540);
+}
+
 // Register service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
