@@ -1,0 +1,91 @@
+#+TITLE: PwdHash — Theft-Resistant Password Generator
+#+OPTIONS: toc:2 num:nil
+
+A Progressive Web App (PWA) implementation of [[https://crypto.stanford.edu/PwdHash/][Stanford PwdHash]], which generates
+theft-resistant hashed passwords using HMAC-MD5.  Runs entirely client-side with
+no server dependencies.  Works offline once installed.
+
+* Quick Start
+
+Clone and serve locally:
+
+#+BEGIN_SRC sh
+  git clone git@github.com:pjkundert/PwdHash.git
+  cd PwdHash
+  make serve
+#+END_SRC
+
+Then open http://localhost:8000 in your browser.
+
+* Project Structure
+
+| Path              | Description                                       |
+|-------------------+---------------------------------------------------|
+| =pwa/index.html=  | Self-contained PWA (all JS/CSS inlined)           |
+| =pwa/manifest.json= | Web App manifest for installability             |
+| =pwa/sw.js=       | Service worker for offline caching                |
+| =pwa/icon-*.png=  | App icons (192x192 and 512x512)                   |
+| =PwdHash.html=    | Original Stanford PwdHash page (reference)        |
+| =PwdHash_files/=  | Original Stanford JS/CSS assets                   |
+
+* Installing as a Web App
+
+The =pwa/= directory is a fully installable Progressive Web App.  Once served
+over HTTPS (or localhost), it can be added to your home screen on iOS or your
+Dock/Applications on macOS.
+
+** iOS (Safari)
+
+1. Open the PWA URL in *Safari* (PWA install is not supported in other iOS browsers).
+2. Tap the *Share* button (box with arrow).
+3. Scroll down and tap *Add to Home Screen*.
+4. Edit the name if desired, then tap *Add*.
+
+The app now appears on your home screen and launches in a standalone window
+without Safari's address bar.  It works offline after the first load.
+
+** macOS (Safari 17+ or Chrome/Edge)
+
+*** Safari
+
+1. Open the PWA URL in Safari.
+2. From the menu bar, choose *File > Add to Dock*.
+3. Edit the name if desired, then click *Add*.
+
+The app appears in your Dock and launches as a standalone window.
+
+*** Chrome / Edge
+
+1. Open the PWA URL.
+2. Click the install icon in the address bar (or *...* menu > *Install PwdHash*).
+3. Confirm the installation.
+
+The app appears in your Applications folder and Launchpad.
+
+* Usage
+
+1. Enter the *Site Address* (e.g. =example.com=).
+2. Enter your *Site Password* (your real password for that site).
+3. The *Hashed Password* is generated automatically.
+4. Tap *Copy* to copy it to the clipboard.
+
+The same site address and password always produce the same hashed password, but
+the hashed password reveals nothing about your original password.  Different
+sites get different hashed passwords even if you reuse the same password.
+
+* How It Works
+
+PwdHash computes =HMAC-MD5(password, domain)= and applies constraints to ensure
+the result contains uppercase, lowercase, and numeric characters.  If your
+original password contains a non-alphanumeric character, the hash will too.
+
+Passwords prefixed with =@@= have the prefix stripped before hashing (this was
+the original browser extension's activation mechanism).
+
+* License
+
+Based on Stanford PwdHash.  Copyright (C) Stanford University 2004-2006.
+Distributed under the BSD License.
+
+Contributors: Blake Ross, Collin Jackson, Nicholas Miyake, Dan Boneh, and John
+C. Mitchell.
