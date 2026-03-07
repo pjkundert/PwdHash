@@ -5,6 +5,10 @@ A Progressive Web App (PWA) implementation of [[https://crypto.stanford.edu/PwdH
 theft-resistant hashed passwords using HMAC-MD5.  Runs entirely client-side with
 no server dependencies.  Works offline once installed.
 
+* Live Site
+
+https://pwdhash.dominionrnd.com
+
 * Quick Start
 
 Clone and serve locally:
@@ -16,6 +20,17 @@ Clone and serve locally:
 #+END_SRC
 
 Then open http://localhost:8000 in your browser.
+
+* Deployment
+
+The site is hosted on Cloudflare Pages at =pwdhash.dominionrnd.com= and
+auto-deploys on every push to =master=.
+
+Cloudflare Pages Git integration settings:
+- Repository: =pjkundert/PwdHash=, branch =master=
+- Build command: /(none)/
+- Build output directory: =pwa=
+- Custom domain: =pwdhash.dominionrnd.com=
 
 * Project Structure
 
