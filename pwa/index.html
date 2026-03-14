@@ -80,8 +80,7 @@ body {
 }
 
 .field input[type="text"],
-.field input[type="password"],
-.field input[type="url"] {
+.field input[type="password"] {
   width: 100%;
   padding: 12px 14px;
   font-size: 17px;
@@ -92,6 +91,10 @@ body {
   outline: none;
   -webkit-appearance: none;
   transition: border-color 0.15s;
+}
+
+#password {
+  -webkit-text-security: disc;
 }
 
 .field input:focus {
@@ -175,11 +178,12 @@ button {
 <div class="card">
   <div class="field">
     <label for="domain">Site Address</label>
-    <input type="url" id="domain" placeholder="example.com" autocapitalize="none" autocorrect="off" spellcheck="false">
+    <input type="text" id="domain" placeholder="example.com" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" list="sites">
+    <datalist id="sites"></datalist>
   </div>
   <div class="field">
     <label for="password">Site Password</label>
-    <input type="password" id="password" placeholder="Your password">
+    <input type="text" id="password" placeholder="Your password" autocomplete="off">
   </div>
   <div class="field">
     <label for="hashed">Hashed Password</label>
@@ -228,6 +232,32 @@ var SPH_kPasswordPrefix="@@";
 function SPH_HashedPassword(password,realm){var hashedPassword=this._getHashedPassword(password,realm);this.toString=function(){return hashedPassword}}
 SPH_HashedPassword.prototype={_getHashedPassword:function(password,realm){var hash=b64_hmac_md5(password,realm);var size=password.length+SPH_kPasswordPrefix.length;var nonalphanumeric=password.match(/\W/)!=null;return this._applyConstraints(hash,size,nonalphanumeric)},_applyConstraints:function(hash,size,nonalphanumeric){var startingSize=size-4;var result=hash.substring(0,startingSize);var extras=hash.substring(startingSize).split('');function nextExtra(){return extras.length?extras.shift().charCodeAt(0):0}function nextExtraChar(){return String.fromCharCode(nextExtra())}function rotate(arr,amount){while(amount--)arr.push(arr.shift())}function between(min,interval,offset){return min+offset%interval}function nextBetween(base,interval){return String.fromCharCode(between(base.charCodeAt(0),interval,nextExtra()))}function contains(regex){return result.match(regex)}result+=(contains(/[A-Z]/)?nextExtraChar():nextBetween('A',26));result+=(contains(/[a-z]/)?nextExtraChar():nextBetween('a',26));result+=(contains(/[0-9]/)?nextExtraChar():nextBetween('0',10));result+=(contains(/\W/)&&nonalphanumeric?nextExtraChar():'+');while(contains(/\W/)&&!nonalphanumeric){result=result.replace(/\W/,nextBetween('A',26))}result=result.split('');rotate(result,nextExtra());return result.join('')}};
 
+// === Site history ===
+function getSites() {
+  try { return JSON.parse(localStorage.getItem('pwdhash-sites') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveSite(domain) {
+  var sites = getSites();
+  if (sites.indexOf(domain) === -1) {
+    sites.push(domain);
+    sites.sort();
+    localStorage.setItem('pwdhash-sites', JSON.stringify(sites));
+    populateSites();
+  }
+}
+
+function populateSites() {
+  var datalist = document.getElementById('sites');
+  datalist.innerHTML = '';
+  getSites().forEach(function(site) {
+    var opt = document.createElement('option');
+    opt.value = site;
+    datalist.appendChild(opt);
+  });
+}
+
 // === App logic ===
 function generate() {
   var domainInput = document.getElementById('domain').value.trim();
@@ -244,18 +274,30 @@ function generate() {
   var hashedEl = document.getElementById('hashed');
   hashedEl.value = result;
   document.getElementById('copyBtn').style.display = 'block';
+  saveSite(domainInput);
 }
 
+populateSites();
 document.getElementById('domain').addEventListener('input', generate);
 document.getElementById('password').addEventListener('input', generate);
 
-document.getElementById('copyBtn').addEventListener('click', function() {
+function copyHash() {
   var hashedEl = document.getElementById('hashed');
+  if (!hashedEl.value) return;
   navigator.clipboard.writeText(hashedEl.value).then(function() {
     var btn = document.getElementById('copyBtn');
     btn.textContent = 'Copied';
     setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
   });
+}
+
+document.getElementById('copyBtn').addEventListener('click', copyHash);
+
+document.getElementById('domain').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); copyHash(); }
+});
+document.getElementById('password').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); copyHash(); }
 });
 
 // Register service worker
